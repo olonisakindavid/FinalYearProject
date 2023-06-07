@@ -4,6 +4,7 @@ BY: OLONISAKIN DAVID AKOLADE 18CK024244 AND OGUIBE FAVOUR OZIOMA 18CK024232
 EEE SET2023 #18TH SET            
 SUPERVISOR: DR. OMORUYI OSEMWINGIE */
 
+//Global declarations//
 //Including necessary libraries
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -11,34 +12,28 @@ SUPERVISOR: DR. OMORUYI OSEMWINGIE */
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 #include <DHT.h>
-
 //Blynk and wifi details
 #define BLYNK_TEMPLATE_ID "TMPLiD4_oZ2g"
 #define BLYNK_TEMPLATE_NAME "COLIFORM DETECTION"
 #define BLYNK_AUTH_TOKEN "O_Y7eWj-zfD9Y49K4kdOTx3ueyJIut6y"
 #define BLYNK_PRINT Serial
-
+//Wifi credentials and assignments
 char auth[] = BLYNK_AUTH_TOKEN; 
 char ssid[] = "Coliform";
 char password[] = "bacteria";
-
-//Global variables declaration
 unsigned long startTime;
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27 ,20,4); //20x4 lcd display
-
 // initialize DHT sensor
 #define DHTPIN 4
 #define DHTTYPE DHT22   
 DHT dht(DHTPIN, DHTTYPE);
 float temperature, humidity;
-
 //setting sensor pins  to the Esp32
   int ldrA = 32;
   int ldrB = 35;
   int ldrC = 34;
   int relayPin = 26; 
-
 //Functions
   void sendSensor(){ 
    float humidity = dht.readHumidity();
@@ -55,7 +50,6 @@ float temperature, humidity;
    Blynk.virtualWrite(V6, humidity);
    Blynk.virtualWrite(V5, temperature);
   }
-
   void updateLedBlynk(){
    int status = digitalRead(relayPin);
    if (status == HIGH)
@@ -74,11 +68,9 @@ void setup(){
   Serial.println("System is ON, Coliform Test");
   delay(2000);
   lcd.begin();  //initialize LCD
-  // lcd.backlight();
   dht.begin();  // initialize DHT sensor
   startTime = millis(); // record the current time in milliseconds
   pinMode(relayPin, OUTPUT);
-
   // Display startup messages on LCD
   lcd.setCursor(0,2);
   lcd.print("PROJECT TOPIC:");
@@ -104,11 +96,10 @@ void setup(){
   lcd.print("OGUIBE FAVOUR");
   delay(2000);
   lcd.clear();
-  lcd.setCursor(0,2);
+  lcd.setCursor(0,1);
   lcd.print("LOADING ....");
   delay(1500);
   lcd.clear();
-
   //Setting up Blynk Application 
   Blynk.begin(auth, ssid, password);
   // Setting interval to send data to Blynk Cloud to 1000ms. It means that data will be sent every second
@@ -144,8 +135,7 @@ void loop() {
   delay(3000);
   // sendSensor();
   // updateLedBlynk();
-
-  //uptime condition
+  //UPTIME - CONDITION
   if(uptime % 20 == 0){
   lcd.setCursor(0,0);
   lcd.print("PROJECT TOPIC:");
@@ -160,8 +150,7 @@ void loop() {
   lcd.setCursor(0,3);
   lcd.print("USING IOT");     
   delay(2000);
-  }
-
+}
   //Getting LDR readings
   int ldr1 = analogRead(ldrA);
   int ldr1_value = map(ldr1, 0, 4095, 0 ,100) ;
@@ -169,7 +158,6 @@ void loop() {
   int ldr2_value = map(ldr2, 0, 4095, 0 ,100);
   int ldr3 = analogRead(ldrC); 
   int ldr3_value = map(ldr3, 0, 4095, 0 ,100);
-
   //Visualize on LDR values on serial monitor
   Serial.print("ldr1 value: ");
   Serial.println(ldr1_value);
@@ -177,9 +165,7 @@ void loop() {
   Serial.println(ldr2_value);
   Serial.print("ldr3 value: ");
   Serial.println(ldr3_value);
-
 //<<<<Checking beakers if coliform bacteria is present or not>>>>>>>>>>>//
-
 if (ldr1_value <= 50) {
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -188,7 +174,6 @@ if (ldr1_value <= 50) {
   lcd.print("Possible Absence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
-  lcd.setCursor(0, 3);
   delay(2000);
 }
 else{
@@ -199,12 +184,9 @@ else{
   lcd.print("Possible Presence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
-  lcd.setCursor(0, 3);
   delay(2000);
 }
-
 lcd.clear(); // clear the LCD after displaying the status of beaker 1
-
 if(ldr2_value <= 50){
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -213,7 +195,6 @@ if(ldr2_value <= 50){
   lcd.print("Possible Absence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
-  lcd.setCursor(0, 3);
   delay(2000);
 }
 else{
@@ -226,9 +207,7 @@ else{
   lcd.print("of Coliform");
   delay(2000);
 }
-
 lcd.clear(); // clear the LCD after displaying the status of beaker 2
-
 if(ldr3_value <= 50){
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -249,22 +228,16 @@ else{
   lcd.print("of Coliform");
   delay(2000); 
 }
-
 lcd.clear(); // clear the LCD after displaying the status of beaker 2
-
 //DHT22 sensor
-  
   float temperature = dht.readTemperature();
   float humidity = dht.readHumidity();
-  
   //<<<<<<<<<<<<<<<<<CONDITIONAL STATEMENTS>>>>>>>>>>>>>>>>>>>>>>
- 
   // checking if reading from sensor was successful
   if (isnan(temperature) || isnan(humidity)) {
     Serial.println(F("Failed to read from DHT sensor!"));
     return;
   }
-  
   // check if temperature is within desired range
   if(temperature < 35.0){
     digitalWrite(relayPin, HIGH); //Turn on Heater
@@ -313,27 +286,24 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
     delay(2000);
     lcd.clear(); 
   }
-
-  //DHT22 Live temperature on Serial MOnitor
+//DHT22 Live temperature on Serial MOnitor
   Serial.print("temperature: ");
   Serial.println(temperature);
   Serial.print("humidity: ") ;
   Serial.println(humidity);
-
-
-//for the 16hour incubation
+//condition when 16hour is reached
   if(uptime == 57600000){
     lcd.clear();
     lcd.setCursor(0,1);
     lcd.print("INCUBATION PROCESS");
-    lcd.setCursor(4, 2);
+    lcd.setCursor(3, 2);
     lcd.print("COMPLETE");
     lcd.clear();
     lcd.setCursor(0,1);
     lcd.print(".FINAL RESULTS.");
     lcd.clear();
     lcd.setCursor(0,1);
-    lcd.print("Please Wait");
+    lcd.print("Please Wait..");
     delay(2000);
     //Printing out final result of project analysis
     //drawing conclusion from the 16hour test
