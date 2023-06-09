@@ -25,7 +25,7 @@ unsigned long startTime;
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27 ,20,4); //20x4 lcd display
 // initialize DHT sensor
-#define DHTPIN 4
+#define DHTPIN 23
 #define DHTTYPE DHT22   
 DHT dht(DHTPIN, DHTTYPE);
 float temperature, humidity;
@@ -33,7 +33,7 @@ float temperature, humidity;
   int ldrA = 32;
   int ldrB = 35;
   int ldrC = 34;
-  int relayPin = 26; 
+  int relayPin = 33; 
 //Functions
   void sendSensor(){ 
    float humidity = dht.readHumidity();
@@ -71,6 +71,7 @@ void setup(){
   dht.begin();  // initialize DHT sensor
   startTime = millis(); // record the current time in milliseconds
   pinMode(relayPin, OUTPUT);
+  pinMode(DHTPIN, INPUT);
   // Display startup messages on LCD
   lcd.setCursor(0,2);
   lcd.print("PROJECT TOPIC:");
