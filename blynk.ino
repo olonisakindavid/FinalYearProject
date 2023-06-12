@@ -25,15 +25,15 @@ unsigned long startTime;
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27 ,20,4); //20x4 lcd display
 // initialize DHT sensor
-#define DHTPIN 23
+#define DHTPIN 5
 #define DHTTYPE DHT22   
 DHT dht(DHTPIN, DHTTYPE);
 float temperature, humidity;
 //setting sensor pins  to the Esp32
-  int ldrA = 32;
+  int ldrA = 33 ;
   int ldrB = 35;
   int ldrC = 34;
-  int relayPin = 33; 
+  int relayPin = 23; 
 //Functions
   void sendSensor(){ 
    float humidity = dht.readHumidity();
