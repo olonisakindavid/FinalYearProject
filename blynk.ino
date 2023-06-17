@@ -25,8 +25,8 @@ unsigned long startTime;
 BlynkTimer timer;
 LiquidCrystal_I2C lcd(0x27 ,20,4); //20x4 lcd display
 // initialize DHT sensor
-#define DHTPIN 5
-#define DHTTYPE DHT22   
+#define DHTPIN  5
+#define DHTTYPE DHT11   
 DHT dht(DHTPIN, DHTTYPE);
 float temperature, humidity;
 //setting sensor pins  to the Esp32
@@ -39,11 +39,11 @@ float temperature, humidity;
    float humidity = dht.readHumidity();
    float temperature = dht.readTemperature();
    int ldr1 = analogRead(ldrA);
-   int ldr1_value = map(ldr1, 0, 4095, 0 ,100) ;
+   int ldr1_value = map(ldr1, 0, 4095, 0 , 100) ;
    int ldr2 = analogRead(ldrB);
-   int ldr2_value = map(ldr2, 0, 4095, 0 ,100);
+   int ldr2_value = map(ldr2, 0, 4095, 0 , 100);
    int ldr3 = analogRead(ldrC); 
-   int ldr3_value = map(ldr3, 0, 4095, 0 ,100);
+   int ldr3_value = map(ldr3, 0, 4095, 0 , 100);
    Blynk.virtualWrite(V2, ldr1_value);
    Blynk.virtualWrite(V3, ldr2_value);
    Blynk.virtualWrite(V4, ldr3_value);
@@ -52,7 +52,7 @@ float temperature, humidity;
   }
   void updateLedBlynk(){
    int status = digitalRead(relayPin);
-   if (status == HIGH)
+   if (status == LOW)
    {
      Blynk.virtualWrite(V1, HIGH);
    }
@@ -63,7 +63,7 @@ float temperature, humidity;
   }
 
 void setup(){
- //initialize serial communication at 921600 bit/s
+ //initialize serial communication at 115200 bit/s
   Serial.begin(115200);
   Serial.println("System is ON, Coliform Test");
   delay(2000);
@@ -71,6 +71,9 @@ void setup(){
   dht.begin();  // initialize DHT sensor
   startTime = millis(); // record the current time in milliseconds
   pinMode(relayPin, OUTPUT);
+  pinMode(ldrA, INPUT);
+  pinMode(ldrB, INPUT);
+  pinMode(ldrC, INPUT);
   pinMode(DHTPIN, INPUT);
   // Display startup messages on LCD
   lcd.setCursor(0,2);
@@ -111,6 +114,20 @@ void setup(){
 void loop() {
   Blynk.run();
   timer.run();//Initiates blynkTimer
+    //Getting LDR readings
+  int ldr1 = analogRead(ldrA);
+  int ldr1_value = map(ldr1, 0, 4095, 0 ,100) ;
+  int ldr2 = analogRead(ldrB);
+  int ldr2_value = map(ldr2, 0, 4095, 0 ,100);
+  int ldr3 = analogRead(ldrC); 
+  int ldr3_value = map(ldr3, 0, 4095, 0 ,100);
+  //Visualize on LDR values on serial monitor
+  Serial.print("ldr1 value: ");
+  Serial.println(ldr1_value);
+  Serial.print("ldr2 value: ");
+  Serial.println(ldr2_value);
+  Serial.print("ldr3 value: ");
+  Serial.println(ldr3_value);
   unsigned long uptime = millis() - startTime;
   int seconds = (uptime / 1000) % 60; // extract the seconds from the uptime
   int minutes = (uptime / (1000 * 60)) % 60; // extract the minutes from the uptime
@@ -152,20 +169,6 @@ void loop() {
   lcd.print("USING IOT");     
   delay(2000);
 }
-  //Getting LDR readings
-  int ldr1 = analogRead(ldrA);
-  int ldr1_value = map(ldr1, 0, 4095, 0 ,100) ;
-  int ldr2 = analogRead(ldrB);
-  int ldr2_value = map(ldr2, 0, 4095, 0 ,100);
-  int ldr3 = analogRead(ldrC); 
-  int ldr3_value = map(ldr3, 0, 4095, 0 ,100);
-  //Visualize on LDR values on serial monitor
-  Serial.print("ldr1 value: ");
-  Serial.println(ldr1_value);
-  Serial.print("ldr2 value: ");
-  Serial.println(ldr2_value);
-  Serial.print("ldr3 value: ");
-  Serial.println(ldr3_value);
 //<<<<Checking beakers if coliform bacteria is present or not>>>>>>>>>>>//
 if (ldr1_value <= 50) {
   lcd.clear();
@@ -240,9 +243,10 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
     return;
   }
   // check if temperature is within desired range
-  if(temperature < 35.0){
-    digitalWrite(relayPin, HIGH); //Turn on Heater
-    Serial.println("Heating pad is ON");
+  //normally closed logic
+  if(temperature > 37.0){
+    digitalWrite(relayPin, HIGH); //Turn off Heater
+    Serial.println("Heating pad is OFF");
     lcd.setCursor(0,0);
     lcd.print("Heating pad:");
     lcd.setCursor(0,1);
@@ -256,9 +260,9 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
     delay(2000); 
     lcd.clear();
   }
-  else if (temperature > 37.0) {
-    digitalWrite(relayPin, LOW); //Turn off Heater
-    Serial.println("Heating pad is OFF");
+  else if (temperature < 35.0) {
+    digitalWrite(relayPin, LOW); //Turn on Heater
+    Serial.println("Heating pad is ON");
     lcd.setCursor(0,0);
     lcd.print("Heating pad:");
     lcd.setCursor(0,1);
