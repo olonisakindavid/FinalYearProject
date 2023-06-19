@@ -11,7 +11,8 @@ SUPERVISOR: DR. OMORUYI OSEMWINGIE */
 #include <BlynkSimpleEsp32.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
-#include <DHT.h>
+#include "DHT.h"
+
 //Blynk and wifi details
 #define BLYNK_TEMPLATE_ID "TMPLiD4_oZ2g"
 #define BLYNK_TEMPLATE_NAME "COLIFORM DETECTION"
@@ -23,27 +24,27 @@ char ssid[] = "Coliform";
 char password[] = "bacteria";
 unsigned long startTime;
 BlynkTimer timer;
-LiquidCrystal_I2C lcd(0x27 ,20,4); //20x4 lcd display
+LiquidCrystal_I2C lcd(0x27 ,20,4); //20x4 lcd dinmsplay
 // initialize DHT sensor
-#define DHTPIN  5
-#define DHTTYPE DHT11   
+#define DHTPIN 5
+#define DHTTYPE DHT11  
 DHT dht(DHTPIN, DHTTYPE);
 float temperature, humidity;
 //setting sensor pins  to the Esp32
   int ldrA = 33 ;
   int ldrB = 35;
   int ldrC = 34;
-  int relayPin = 23; 
+  int relayPin = 32; 
 //Functions
   void sendSensor(){ 
    float humidity = dht.readHumidity();
    float temperature = dht.readTemperature();
    int ldr1 = analogRead(ldrA);
-   int ldr1_value = map(ldr1, 0, 4095, 0 , 100) ;
+   int ldr1_value = map(ldr1, 600, 0, 0 ,100);
    int ldr2 = analogRead(ldrB);
-   int ldr2_value = map(ldr2, 0, 4095, 0 , 100);
+   int ldr2_value = map(ldr2, 2200, 0 , 0, 100);
    int ldr3 = analogRead(ldrC); 
-   int ldr3_value = map(ldr3, 0, 4095, 0 , 100);
+   int ldr3_value = map(ldr3, 670, 0 , 0, 100);
    Blynk.virtualWrite(V2, ldr1_value);
    Blynk.virtualWrite(V3, ldr2_value);
    Blynk.virtualWrite(V4, ldr3_value);
@@ -71,24 +72,21 @@ void setup(){
   dht.begin();  // initialize DHT sensor
   startTime = millis(); // record the current time in milliseconds
   pinMode(relayPin, OUTPUT);
-  pinMode(ldrA, INPUT);
-  pinMode(ldrB, INPUT);
-  pinMode(ldrC, INPUT);
   pinMode(DHTPIN, INPUT);
   // Display startup messages on LCD
   lcd.setCursor(0,2);
   lcd.print("PROJECT TOPIC:");
-  delay(1000);
+  delay(2500);
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("DEVELOPMENT OF A");
   lcd.setCursor(0,1);
-  lcd.print("PORTABLE INCUBATOR FOR");
+  lcd.print("PORTABLE INCUBATOR");
   lcd.setCursor(0,2);
-  lcd.print("DETECTION OF COLIFORM"); 
+  lcd.print("FOR DETECTION OF"); 
   lcd.setCursor(0,3);
-  lcd.print("USING IOT");     
-  delay(2000);
+  lcd.print("COLIFORM USING IOT");     
+  delay(4000);
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("BY");
@@ -98,11 +96,14 @@ void setup(){
   lcd.print("AND");
   lcd.setCursor(0,3);
   lcd.print("OGUIBE FAVOUR");
-  delay(2000);
+  delay(4000);
   lcd.clear();
   lcd.setCursor(0,1);
   lcd.print("LOADING ....");
-  delay(1500);
+  delay(2000);
+  lcd.setCursor(0,1);
+  lcd.print("Connecting....");
+  delay(2000);
   lcd.clear();
   //Setting up Blynk Application 
   Blynk.begin(auth, ssid, password);
@@ -115,12 +116,12 @@ void loop() {
   Blynk.run();
   timer.run();//Initiates blynkTimer
     //Getting LDR readings
-  int ldr1 = analogRead(ldrA);
-  int ldr1_value = map(ldr1, 0, 4095, 0 ,100) ;
-  int ldr2 = analogRead(ldrB);
-  int ldr2_value = map(ldr2, 0, 4095, 0 ,100);
-  int ldr3 = analogRead(ldrC); 
-  int ldr3_value = map(ldr3, 0, 4095, 0 ,100);
+   int ldr1 = analogRead(ldrA);
+   int ldr1_value = map(ldr1, 600, 0, 0 ,100);
+   int ldr2 = analogRead(ldrB);
+   int ldr2_value = map(ldr2, 2200, 0 , 0, 100);
+   int ldr3 = analogRead(ldrC); 
+   int ldr3_value = map(ldr3, 670, 0 , 0, 100);
   //Visualize on LDR values on serial monitor
   Serial.print("ldr1 value: ");
   Serial.println(ldr1_value);
@@ -132,7 +133,9 @@ void loop() {
   int seconds = (uptime / 1000) % 60; // extract the seconds from the uptime
   int minutes = (uptime / (1000 * 60)) % 60; // extract the minutes from the uptime
   int hours = (uptime / (1000 * 60 * 60)) % 24; // extract the hours from the uptime
-  lcd.setCursor(0, 0); // set the cursor to the top right corner
+  lcd.setCursor(0,1);
+  lcd.print("Coliform Test");
+  lcd.setCursor(0, 2); // set the cursor to the top right corner
   lcd.print("Time: "); // print the label
   lcd.print(hours); // print the number of hours
   lcd.print("h ");
@@ -140,37 +143,37 @@ void loop() {
   lcd.print("m ");
   lcd.print(seconds); // print the number of seconds
   lcd.print("s");
-  delay(3000) ;
+  delay(4000) ;
   lcd.clear();
   lcd.setCursor(0,1);
-  lcd.print("Rechecking"); 
-  delay(1200);
+  lcd.print("Rechecking...."); 
+  delay(3000);
   lcd.clear();
   lcd.setCursor(0,1);
   lcd.print("Checking Status");   
   lcd.setCursor(0,2);
   lcd.print("in the incubator");
   delay(3000);
-  // sendSensor();
-  // updateLedBlynk();
+  sendSensor();
+  updateLedBlynk();
   //UPTIME - CONDITION
   if(uptime % 20 == 0){
   lcd.setCursor(0,0);
   lcd.print("PROJECT TOPIC:");
-  delay(1000);
+  delay(2500);
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("DEVELOPMENT OF A");
   lcd.setCursor(0,1);
-  lcd.print("PORTABLE INCUBATOR FOR");
-  lcd.setCursor(0,2);
-  lcd.print("DETECTION OF COLIFORM"); 
+  lcd.print("PORTABLE INCUBATOR");
+  lcd.setCursor(0,2); 
+  lcd.print("FOR DETECTION OF"); 
   lcd.setCursor(0,3);
-  lcd.print("USING IOT");     
-  delay(2000);
+  lcd.print("COLIFORM USING IOT");     
+  delay(4000);
 }
 //<<<<Checking beakers if coliform bacteria is present or not>>>>>>>>>>>//
-if (ldr1_value <= 50) {
+if (ldr1_value < 66) {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Beaker 1");
@@ -178,8 +181,10 @@ if (ldr1_value <= 50) {
   lcd.print("Possible Absence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
-  delay(2000);
-}
+  lcd.setCursor(0,3);
+  lcd.print("Resistance: " + String(ldr1_value));
+  delay(3000);
+ }
 else{
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -188,10 +193,12 @@ else{
   lcd.print("Possible Presence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
-  delay(2000);
+  lcd.setCursor(0,3);
+  lcd.print("Resistance: " + String(ldr1_value));
+  delay(3000);
 }
 lcd.clear(); // clear the LCD after displaying the status of beaker 1
-if(ldr2_value <= 50){
+if(ldr2_value < 28){
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Beaker 2");
@@ -199,7 +206,9 @@ if(ldr2_value <= 50){
   lcd.print("Possible Absence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
-  delay(2000);
+  lcd.setCursor(0,3);
+  lcd.print("Resistance: " + String(ldr2_value));
+  delay(3000);
 }
 else{
   lcd.clear();
@@ -209,10 +218,13 @@ else{
   lcd.print("Possible Presence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
-  delay(2000);
+  lcd.setCursor(0,3);
+  lcd.print("Resistance: " + String(ldr2_value));
+  delay(3000);
 }
 lcd.clear(); // clear the LCD after displaying the status of beaker 2
-if(ldr3_value <= 50){
+
+if(ldr3_value < 59){
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Beaker 3");
@@ -220,6 +232,8 @@ if(ldr3_value <= 50){
   lcd.print("Possible Absence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
+  lcd.setCursor(0,3);
+  lcd.print("Resistance: " + String(ldr3_value));
   delay(2000);
 }
 else{
@@ -230,6 +244,8 @@ else{
   lcd.print("Possible Presence");
   lcd.setCursor(0, 2);
   lcd.print("of Coliform");
+  lcd.setCursor(0,3);
+  lcd.print("Resistance: " + String(ldr3_value));
   delay(2000); 
 }
 lcd.clear(); // clear the LCD after displaying the status of beaker 2
@@ -250,14 +266,12 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
     lcd.setCursor(0,0);
     lcd.print("Heating pad:");
     lcd.setCursor(0,1);
-    lcd.print("is ON");
-    lcd.setCursor(0,2);
-    lcd.print("Temperature: ");
-    lcd.print(temperature);
-    lcd.setCursor(0,3);
-    lcd.print("Humidity: ");
-    lcd.print(humidity);
-    delay(2000); 
+    lcd.print("is OFF");
+    lcd.setCursor(0, 2);
+    lcd.print("Temperature:" + String(temperature) + "°C");
+    lcd.setCursor(0, 3);
+    lcd.print("Humidity:" + String(humidity) + "%");
+    delay(3000); 
     lcd.clear();
   }
   else if (temperature < 35.0) {
@@ -266,14 +280,12 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
     lcd.setCursor(0,0);
     lcd.print("Heating pad:");
     lcd.setCursor(0,1);
-    lcd.print("is OFF");
+    lcd.print("is ON");
     lcd.setCursor(0,2);
-    lcd.print("Temperature: ");
-    lcd.print(temperature);
-    lcd.setCursor(0,3);
-    lcd.print("Humidity: ");
-    lcd.print(humidity);
-    delay(2000); 
+    lcd.print("Temperature:" + String(temperature) + "°C");
+    lcd.setCursor(0, 3);
+    lcd.print("Humidity:" + String(humidity) + "%");
+    delay(3000); 
     lcd.clear();
   }
   
@@ -282,13 +294,10 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
     lcd.setCursor(0,0);
     lcd.print("Optimal Temperature");
     lcd.setCursor(0,1);
-    lcd.print("Temperature: ");
-    lcd.print(temperature);
-    lcd.setCursor(0,2);
-    lcd.print("Humidity: ");
-    lcd.print(humidity);
-    lcd.setCursor(0,3);
-    delay(2000);
+    lcd.print("Temperature:" + String(temperature) + "°C");
+    lcd.setCursor(0, 2);
+    lcd.print("Humidity:" + String(humidity) + "%");
+    delay(3000); 
     lcd.clear(); 
   }
 //DHT22 Live temperature on Serial MOnitor
@@ -309,10 +318,11 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
     lcd.clear();
     lcd.setCursor(0,1);
     lcd.print("Please Wait..");
-    delay(2000);
+    delay(3000);
     //Printing out final result of project analysis
     //drawing conclusion from the 16hour test
-    switch (ldr1_value <= 50) {
+    //Check LDR1 value
+    switch (ldr1_value < 66) {
       case true:
         lcd.clear();
         lcd.setCursor(0, 0);
@@ -323,7 +333,7 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
         lcd.print("Water is Safe");
         lcd.setCursor(0, 3);
         lcd.print("To Drink");  
-        delay(2500);   
+        delay(3000);   
         lcd.clear(); 
         break;
       case false:
@@ -336,13 +346,13 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
         lcd.print("Water is Unsafe");
         lcd.setCursor(0, 3);
         lcd.print("Don't Drink!!"); 
-        delay(2500);
+        delay(3000);
         lcd.clear();
         break;
     }
 
     // Check LDR2 value
-    switch (ldr2_value <= 50) {
+    switch (ldr2_value < 28) {
       case true:
         lcd.clear();
         lcd.setCursor(0, 0);
@@ -353,7 +363,7 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
         lcd.print("Water is Safe");
         lcd.setCursor(0, 3);
         lcd.print("To Drink");
-        delay(2000); 
+        delay(3000); 
         lcd.clear(); 
         break;
       case false:
@@ -366,13 +376,13 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
         lcd.print("Water is Unsafe");
         lcd.setCursor(0, 3);
         lcd.print("Don't Drink");
-        delay(2000);  
+        delay(3000);  
         lcd.clear();
         break;
     }
 
   // Check LDR3 value
-  switch (ldr3_value <= 50) {
+  switch (ldr3_value < 59) {
     case true:
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -383,7 +393,7 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
       lcd.print("Water is Safe");
       lcd.setCursor(0, 3);
       lcd.print("To Drink");
-      delay(2000);  
+      delay(3000);  
       lcd.clear();
       break;
     case false:
@@ -396,7 +406,7 @@ lcd.clear(); // clear the LCD after displaying the status of beaker 2
       lcd.print("Water is Unsafe");
       lcd.setCursor(0, 3);
       lcd.print("Don't Drink");
-      delay(2000);  
+      delay(3000);  
       lcd.clear();
       break;
   }
